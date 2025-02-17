@@ -27,6 +27,17 @@ A comprehensive collection of essential Linux commands and DevOps tools referenc
 - [CI/CD Tools and Commands](#cicd-tools-and-commands)
 - [Cloud Services](#cloud-services)
 - [Logging and Monitoring](#logging-and-monitoring)
+- [ZFS Management](#zfs-management)
+- [ZFS Tools and Snapshots](#zfs-tools-and-snapshots)
+- [ZnapZend Backup](#znapzend-backup)
+- [Logical Volume Management](#logical-volume-management)
+- [Btrfs File System](#btrfs-file-system)
+- [Proxmox Administration](#proxmox-administration)
+- [Configuration Management](#configuration-management)
+- [Infrastructure as Code](#infrastructure-as-code)
+- [Container Orchestration](#container-orchestration)
+- [Continuous Integration](#continuous-integration)
+
 
 ## File and Directory Management
 
@@ -400,3 +411,378 @@ gcloud functions deploy         # Deploy function
 gcloud sql instances create     # Create SQL instance
 ```
 
+## ZFS Management
+
+Commands for managing ZFS pools and datasets.
+
+```bash
+# Pool Management
+zpool create tank mirror sda sdb    # Create mirrored pool
+zpool status -v                     # Show pool status
+zpool scrub tank                    # Start pool scrub
+zpool import -f tank                # Force import pool
+zpool export tank                   # Export pool
+
+# Dataset Management
+zfs create tank/dataset            # Create dataset
+zfs set compression=lz4 tank/dataset  # Enable compression
+zfs get all tank/dataset           # Show all properties
+zfs list -t snapshot               # List snapshots
+zfs send tank/dataset@snap | zfs receive backup/dataset  # Send snapshot
+
+# Performance Tuning
+zfs set primarycache=all tank      # Set ARC cache
+zfs set secondarycache=all tank    # Set L2ARC cache
+zfs set sync=disabled tank         # Disable sync writes
+zfs set atime=off tank            # Disable access time updates
+
+# Example: Creating a Mirrored Pool with Cache
+zpool create tank mirror sda sdb \
+    cache nvme0n1 \
+    log mirror nvme1n1 nvme2n1
+```
+
+## ZFS Tools and Snapshots
+
+Advanced ZFS tools and snapshot management.
+
+```bash
+# ZFS Tools
+zfs-auto-snapshot                  # Automatic snapshot tool
+sanoid                            # Policy-driven snapshot management
+zfs-linux-utils                   # Additional ZFS utilities
+
+# Snapshot Management
+zfs snapshot tank/dataset@snap    # Create snapshot
+zfs rollback tank/dataset@snap    # Rollback to snapshot
+zfs clone tank/dataset@snap tank/clone  # Clone snapshot
+zfs destroy tank/dataset@snap     # Delete snapshot
+
+# Example: Automated Snapshot Script
+#!/bin/bash
+# Create daily snapshot with timestamp
+DATE=$(date +%Y-%m-%d_%H:%M)
+zfs snapshot -r tank@daily-$DATE
+
+# Clean old snapshots
+zfs list -H -t snapshot -o name | \
+    grep "daily-" | head -n -7 | \
+    xargs -r zfs destroy
+```
+
+## ZnapZend Backup
+
+ZnapZend configuration and backup management.
+
+```bash
+# ZnapZend Setup
+znapzendzetup create --tsformat='%Y-%m-%d-%H%M%S' \
+    SRC '7d=>1h,30d=>1d' tank/dataset \
+    DST '7d=>1h,30d=>1d' backup/dataset
+
+# Configuration Management
+znapzendzetup list                # List configurations
+znapzendzetup export pool/fs      # Export configuration
+znapzendzetup import pool/fs      # Import configuration
+
+# Backup Management
+znapzend --noaction              # Dry run
+znapzend --verbose               # Verbose output
+znapzend --recursive             # Recursive backup
+
+# Example: ZnapZend Configuration
+tank/dataset:
+    frequent => 4=>15min
+    hourly => 24=>1hour
+    daily => 7=>1day
+    weekly => 4=>1week
+    monthly => 12=>1month
+```
+
+## Logical Volume Management
+
+LVM commands for managing storage volumes.
+
+```bash
+# Physical Volume Management
+pvcreate /dev/sdb                # Create PV
+pvdisplay                        # Show PV info
+pvresize /dev/sdb                # Resize PV
+
+# Volume Group Management
+vgcreate vg0 /dev/sdb           # Create VG
+vgextend vg0 /dev/sdc           # Add PV to VG
+vgreduce vg0 /dev/sdc           # Remove PV from VG
+
+# Logical Volume Management
+lvcreate -L 10G vg0 -n lv0      # Create LV
+lvextend -L +5G /dev/vg0/lv0    # Extend LV
+lvreduce -L -5G /dev/vg0/lv0    # Reduce LV
+
+# Filesystem Resizing
+# For ext3/ext4
+resize2fs /dev/vg0/lv0          # Resize after lvextend
+
+# For XFS
+xfs_growfs /dev/vg0/lv0         # Grow XFS filesystem
+# Note: XFS cannot be shrunk
+
+# Example: Extending Root Volume
+lvextend -l +100%FREE /dev/vg0/root  # Use all free space
+resize2fs /dev/vg0/root              # Resize filesystem
+```
+
+## Btrfs File System
+
+Btrfs filesystem management commands.
+
+```bash
+# Filesystem Management
+mkfs.btrfs /dev/sda              # Create filesystem
+btrfs filesystem show            # Show filesystem
+btrfs filesystem df /mount       # Show space usage
+btrfs balance start /mount       # Start balance
+
+# Subvolume Management
+btrfs subvolume create /mount/@  # Create subvolume
+btrfs subvolume list /mount      # List subvolumes
+btrfs subvolume delete /mount/@  # Delete subvolume
+
+# Snapshot Management
+btrfs subvolume snapshot /mount/@ /mount/@snap  # Create snapshot
+btrfs send /mount/@snap | btrfs receive /backup # Send snapshot
+
+# Example: Creating RAID1 Filesystem
+mkfs.btrfs -d raid1 -m raid1 /dev/sda /dev/sdb
+
+# Example: Defragmentation
+btrfs filesystem defragment -r /mount
+```
+
+## Proxmox Administration
+
+Proxmox VE management commands.
+
+```bash
+# VM Management
+qm list                          # List VMs
+qm start 100                     # Start VM
+qm stop 100                      # Stop VM
+qm create 100                    # Create VM
+
+# Container Management
+pct list                         # List containers
+pct start 100                    # Start container
+pct stop 100                     # Stop container
+pct create 100 local:vztmpl/ubuntu-20.04-standard_20.04-1_amd64.tar.gz
+
+# Storage Management
+pvesm status                     # Show storage status
+pvesm add cifs storage --server 192.168.1.100 --share backup
+
+# Cluster Management
+pvecm status                     # Show cluster status
+pvecm add node2                  # Add node to cluster
+
+# Example: Creating VM from Template
+qm clone 9000 100 --name web-server
+qm set 100 --cores 2
+qm set 100 --memory 2048
+qm start 100
+```
+
+## Configuration Management
+
+Ansible configuration and playbook examples.
+
+```yaml
+# Inventory Example
+[webservers]
+web1.example.com
+web2.example.com
+
+[dbservers]
+db1.example.com
+db2.example.com
+
+# Playbook Example - Configure Web Servers
+---
+- name: Configure web servers
+  hosts: webservers
+  become: yes
+  
+  vars:
+    http_port: 80
+    max_clients: 200
+    
+  tasks:
+    - name: Install Apache
+      apt:
+        name: apache2
+        state: present
+        
+    - name: Start Apache
+      service:
+        name: apache2
+        state: started
+        enabled: yes
+        
+    - name: Deploy configuration
+      template:
+        src: apache2.conf.j2
+        dest: /etc/apache2/apache2.conf
+      notify: Restart Apache
+      
+  handlers:
+    - name: Restart Apache
+      service:
+        name: apache2
+        state: restarted
+
+# Role Structure Example
+roles/
+  webserver/
+    tasks/
+      main.yml
+    handlers/
+      main.yml
+    templates/
+      apache2.conf.j2
+    vars/
+      main.yml
+```
+
+## Infrastructure as Code
+
+Terraform configuration examples.
+
+```hcl
+# Provider Configuration
+provider "aws" {
+  region = "us-west-2"
+}
+
+# VPC Configuration
+resource "aws_vpc" "main" {
+  cidr_block = "10.0.0.0/16"
+  
+  tags = {
+    Name = "main"
+  }
+}
+
+# EC2 Instance
+resource "aws_instance" "web" {
+  ami           = "ami-0c55b159cbfafe1f0"
+  instance_type = "t2.micro"
+  
+  vpc_security_group_ids = [aws_security_group.allow_http.id]
+  
+  tags = {
+    Name = "web-server"
+  }
+}
+
+# Example: Using Variables
+variable "environment" {
+  type    = string
+  default = "development"
+}
+
+# Example: Using Modules
+module "vpc" {
+  source = "terraform-aws-modules/vpc/aws"
+  
+  name = "my-vpc"
+  cidr = "10.0.0.0/16"
+  
+  azs             = ["us-west-2a", "us-west-2b"]
+  private_subnets = ["10.0.1.0/24", "10.0.2.0/24"]
+  public_subnets  = ["10.0.101.0/24", "10.0.102.0/24"]
+}
+```
+
+## Container Orchestration
+
+Kubernetes and k3s administration.
+
+```bash
+# Kubernetes Administration
+kubectl apply -f manifest.yaml    # Apply configuration
+kubectl get pods -A               # List all pods
+kubectl describe node node1       # Show node details
+kubectl logs pod-name            # View pod logs
+
+# K3s Management
+k3s server                       # Start K3s server
+k3s agent                        # Start K3s agent
+k3s kubectl get nodes           # List nodes
+k3s uninstall.sh                # Uninstall K3s
+
+# ArgoCD Application Example
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: myapp
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/org/repo
+    targetRevision: HEAD
+    path: k8s
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: myapp
+
+# Example: Deploying with Kustomize
+kubectl apply -k ./overlay/production
+```
+
+## Continuous Integration
+
+Jenkins pipeline examples.
+
+```groovy
+// Jenkinsfile Example
+pipeline {
+    agent any
+    
+    environment {
+        DOCKER_IMAGE = 'myapp:${BUILD_NUMBER}'
+    }
+    
+    stages {
+        stage('Build') {
+            steps {
+                sh 'docker build -t ${DOCKER_IMAGE} .'
+            }
+        }
+        
+        stage('Test') {
+            steps {
+                sh 'docker run --rm ${DOCKER_IMAGE} npm test'
+            }
+        }
+        
+        stage('Deploy') {
+            when {
+                branch 'main'
+            }
+            steps {
+                sh '''
+                    kubectl apply -f k8s/
+                    kubectl set image deployment/myapp \
+                        container=${DOCKER_IMAGE}
+                '''
+            }
+        }
+    }
+    
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
+```
