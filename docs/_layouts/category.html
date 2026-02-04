@@ -1,0 +1,33 @@
+---
+layout: default
+---
+<div class="card mb-4">
+    <div class="card-header border-0">
+        <h1 class="card-title text-white">
+            {% if page.icon %}
+            <i class="{{ page.icon }} me-2 text-neon-blue"></i>
+            {% endif %}
+            {{ page.title }}
+        </h1>
+        {% if page.description %}
+        <p class="text-muted mt-2">{{ page.description }}</p>
+        {% endif %}
+    </div>
+</div>
+
+{% if page.scenarios %}
+<div class="card mb-4 card-scenarios">
+    <div class="card-header border-0">
+        <h3 class="card-title text-white"><i class="ti ti-lightbulb me-2 text-warning"></i> Common Scenarios</h3>
+    </div>
+    <div class="card-body">
+        {{ page.scenarios }}
+    </div>
+</div>
+{% endif %}
+
+<div class="card">
+    <div class="card-body">
+        {{ content }}
+    </div>
+</div>

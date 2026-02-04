@@ -1,0 +1,64 @@
+# Jekyll Configuration for Linux Commands Reference
+# Custom dark theme - no external theme
+title: AF Linux - Linux & DevOps Commands Reference
+description: A comprehensive collection of essential Linux commands and DevOps tools reference for system administrators and DevOps engineers.
+author: Ahmed Fahmy
+
+# Site settings
+baseurl: "" # e.g., /blog
+url: "https://aflinux.afwork.qzz.io" # the base hostname & protocol for your site
+github_username: afahmy
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+permalink: /:categories/:title/
+excerpt_separator: "\n\n"
+
+# Exclude from processing
+exclude:
+  - .sass-cache/
+  - .jekyll-cache/
+  - gemfiles/
+  - Gemfile
+  - Gemfile.lock
+  - node_modules/
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
+  - README.md
+  - LICENSE
+
+# Collections
+collections:
+  categories:
+    output: true
+    permalink: /category/:name/
+
+# Defaults
+defaults:
+  - scope:
+      path: ""
+      type: "categories"
+    values:
+      layout: "category"
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "post"
+
+# Search settings
+simple_jekyll_search:
+  # Full text search
+  # If set to true, full-text search will be enabled in search results
+  full_text_search: true
+
+# Plugins (GitHub Pages compatible)
+# No plugins required for basic functionality
+
+# Sass/SCSS settings
+sass:
+  sass_dir: _sass
+  style: compressed

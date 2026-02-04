@@ -1,0 +1,14 @@
+# Jekyll cache
+.jekyll-cache
+.jekyll-metadata
+
+# Build output
+_site
+
+# Gemfile
+Gemfile
+Gemfile.lock
+
+# OS files
+.DS_Store
+Thumbs.db

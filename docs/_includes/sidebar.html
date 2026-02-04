@@ -1,0 +1,25 @@
+<nav class="custom-sidebar" id="sidebar">
+    <div class="nav flex-column">
+        <a class="nav-link {% if page.url == '/' %}active{% endif %}" href="{{ '/' | relative_url }}">
+            <i class="ti ti-home"></i> Home
+        </a>
+        {% for category in site.categories %}
+        <a class="nav-link {% if page.url == category.url %}active{% endif %}" href="{{ category.url }}">
+            {% if category.icon %}
+            <i class="{{ category.icon }}"></i> {{ category.title }}
+            {% else %}
+            <i class="ti ti-file-code"></i> {{ category.title }}
+            {% endif %}
+        </a>
+        {% endfor %}
+
+        <div class="mt-auto p-4">
+            <div class="card bg-transparent border-primary border-opacity-25">
+                <div class="card-body p-2 text-center">
+                    <small class="d-block mb-2 text-muted">Quick Search</small>
+                    <span class="badge bg-primary w-100 text-white"><i class="ti ti-search me-1"></i> Ctrl+K</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>

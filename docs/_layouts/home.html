@@ -1,0 +1,53 @@
+---
+layout: default
+---
+<!-- Hero Section -->
+<section class="mb-5 pt-4">
+    <div class="row row-deck row-cards">
+        <div class="col-12">
+            <div class="card card-md card-welcome">
+                <div class="card-body">
+                    <h1 class="display-5 fw-bold mb-2 text-white">{{ site.title }}</h1>
+                    <p class="text-secondary lead">
+                        {{ site.description }}
+                    </p>
+                    <div class="d-flex gap-2 flex-wrap mt-3">
+                        <span class="badge bg-blue-lt border border-blue">Linux</span>
+                        <span class="badge bg-azure-lt border border-azure">DevOps</span>
+                        <span class="badge bg-purple-lt border border-purple">Cloud</span>
+                        <span class="badge bg-orange-lt border border-orange">Containers</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Category Grid -->
+<section class="mb-5">
+    <div class="card">
+        <div class="card-header border-0">
+            <h3 class="card-title text-white"><i class="ti ti-grid me-2 text-neon-blue"></i> Browse Categories</h3>
+        </div>
+        <div class="card-body pt-3">
+            <div class="row g-3" id="category-grid">
+                {% for category in site.categories %}
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                    <a href="{{ category.url }}" class="tech-item text-decoration-none">
+                        <div class="tech-icon">
+                            {% if category.icon %}
+                            <i class="{{ category.icon }}" style="color: {{ category.color | default: '#00d4ff' }};"></i>
+                            {% else %}
+                            <i class="ti ti-file-code" style="color: #00d4ff;"></i>
+                            {% endif %}
+                        </div>
+                        <div class="fw-bold text-light text-center">{{ category.title }}</div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+{{ content }}

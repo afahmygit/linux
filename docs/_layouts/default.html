@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+    <title>{% if page.title %}{{ page.title }} - {% endif %}{{ site.title }}</title>
+    <meta name="description" content="{% if page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | truncate: 160 }}{% else %}{{ site.description }}{% endif %}"/>
+
+    <!-- Tabler Core -->
+    <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0/dist/js/tabler.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0/dist/css/tabler.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0/dist/css/tabler-vendors.min.css" rel="stylesheet"/>
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}"/>
+</head>
+<body class="theme-dark">
+
+    <!-- Floating Menu Button -->
+    <div class="menu-toggle" id="menuBtn" onclick="toggleMenu()">
+        <i class="ti ti-menu-2 fs-2"></i>
+    </div>
+
+    <!-- Overlay -->
+    <div class="overlay" onclick="toggleMenu()" id="overlay"></div>
+
+    <!-- Custom Sidebar -->
+    {% include sidebar.html %}
+
+    <div class="page-wrapper">
+        <div class="page-body">
+            <div class="container-xl">
+
+                <!-- Search Bar -->
+                {% include search.html %}
+
+                <!-- Main Content -->
+                <main class="content-main">
+                    {{ content }}
+                </main>
+
+                <!-- Footer -->
+                <footer class="footer footer-transparent d-print-none text-center mt-5">
+                    <div class="container-xl">
+                        <div class="row align-items-center">
+                            <div class="col-12">
+                                <ul class="list-inline list-inline-dots mb-0">
+                                    <li class="list-inline-item">
+                                        Copyright &copy; <script>document.write(new Date().getFullYear())</script>
+                                        <span class="text-white">{{ site.author }}</span>.
+                                        All rights reserved.
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{{ '/assets/js/main.js' | relative_url }}"></script>
+    <script src="{{ '/assets/js/jekyll-search.js' | relative_url }}"></script>
+</body>
+</html>
