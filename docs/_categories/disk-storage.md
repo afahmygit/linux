@@ -1,7 +1,7 @@
 ---
 layout: category
 title: Disk & Storage
-icon: ti ti-device-hdd
+icon: ti ti-server
 color: #ff6b00
 description: Disk management, filesystems, ZFS, LVM, and storage troubleshooting.
 ---
