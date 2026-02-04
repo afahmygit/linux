@@ -1,7 +1,7 @@
 ---
 layout: category
 title: GPU & AI
-icon: ti ti-brand-cuda
+icon: ti ti-cpu
 color: #76b900
 description: NVIDIA GPU management, AI tools, CUDA, Slurm, Conda, Spack, and Environment Modules.
 ---
