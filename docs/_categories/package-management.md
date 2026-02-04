@@ -1,7 +1,7 @@
 ---
 layout: category
 title: Package Management
-icon: ti ti-package
+icon: ti ti-list
 color: #10b981
 description: Package managers for Debian/Ubuntu, RHEL/CentOS, and SUSE systems.
 ---

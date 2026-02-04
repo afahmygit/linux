@@ -1,7 +1,7 @@
 ---
 layout: category
 title: Process Management
-icon: ti ti-cpu
+icon: ti ti-layout
 color: #ff0055
 description: Process monitoring, control, and system resource management.
 ---
