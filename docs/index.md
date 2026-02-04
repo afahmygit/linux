@@ -1,6 +1,6 @@
 ---
 layout: home
-title: AF Linux - Linux & DevOps Commands Reference
+title: Linux & DevOps Commands Reference - By AF
 ---
 
 ## Quick Start
