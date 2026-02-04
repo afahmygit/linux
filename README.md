@@ -37,6 +37,8 @@ A comprehensive collection of essential Linux commands and DevOps tools referenc
 - [Infrastructure as Code](#infrastructure-as-code)
 - [Container Orchestration](#container-orchestration)
 - [Continuous Integration](#continuous-integration)
+- [GPU & AI Management](#gpu--ai-management)
+- [Server BMC & iLO Management](#server-bmc--ilo-management)
 
 
 ## File and Directory Management
@@ -778,11 +780,231 @@ pipeline {
             }
         }
     }
-    
+
     post {
         always {
             cleanWs()
         }
     }
 }
+```
+
+## GPU & AI Management
+
+NVIDIA GPU management, AI/ML tools, HPC workload management.
+
+```bash
+# NVIDIA GPU Monitoring with nvidia-smi
+nvidia-smi                                    # Show GPU status
+nvidia-smi dmon                               # Continuous monitoring
+watch -n 1 nvidia-smi                         # Watch GPU stats
+nvidia-smi -q                                 # Detailed GPU info
+nvidia-smi -q -d TEMPERATURE                  # Temperature info only
+nvidia-smi --query-gpu=utilization.gpu,temperature.gpu --format=csv,noheader
+
+# GPU Process Management
+nvidia-smi pmon -c 1                          # Show processes using GPU
+fuser -v /dev/nvidia*                         # Find GPU processes
+
+# NVIDIA Driver & CUDA
+nvcc --version                                # Check CUDA version
+cat /usr/local/cuda/version.txt              # Legacy CUDA version check
+ls -la /usr/local/ | grep cuda                # List installed CUDA versions
+
+# Set CUDA version (add to .bashrc)
+export PATH=/usr/local/cuda-12.1/bin:$PATH
+export LD_LIBRARY_PATH=/usr/local/cuda-12.1/lib64:$LD_LIBRARY_PATH
+sudo update-alternatives --config cuda       # Switch CUDA versions
+
+# GPU Persistence & Power Management
+sudo nvidia-smi -pm 1                         # Enable persistence mode
+sudo nvidia-smi -pl 250                       # Set power limit (W)
+nvidia-smi -r                                  # Reset all GPUs
+nvidia-smi -i 0 -r                             # Reset specific GPU
+
+# GPU Device Selection
+export CUDA_VISIBLE_DEVICES=0,1               # Use GPUs 0 and 1
+export CUDA_VISIBLE_DEVICES=2,3               # Use GPUs 2 and 3
+
+# Conda - Environment & Package Management
+conda create -n myenv python=3.11             # Create environment
+conda activate myenv                          # Activate environment
+conda deactivate                               # Deactivate environment
+conda env list                                 # List environments
+conda env remove -n myenv                     # Remove environment
+conda install numpy pandas matplotlib         # Install packages
+conda install -c conda-forge package          # Install from channel
+conda list                                     # List installed packages
+conda search tensorflow                       # Search packages
+conda env export > environment.yml            # Export environment
+conda env create -f environment.yml           # Create from file
+
+# Environment Modules (Lmod)
+module avail                                   # List available modules
+module list                                    # List loaded modules
+module load cuda/12.1                          # Load module
+module unload cuda                             # Unload module
+module purge                                    # Unload all modules
+module spider keyword                          # Search modules
+module show cuda/12.1                          # Module details
+
+# Spack - HPC Package Manager
+spack list                                     # List packages
+spack find                                     # Find installed packages
+spack info package_name                        # Package info
+spack install package_name                     # Install package
+spack install package_name@version             # Specific version
+spack install package_name+cuda                # With variants
+spack env create myenv                         # Create environment
+spack env activate myenv                       # Activate environment
+
+# Slurm - Workload Manager
+sinfo                                         # Cluster state
+sinfo -N -l                                   # Detailed node info
+squeue                                        # Job queue
+squeue -u $USER                               # Your jobs
+sbatch job_script.sh                          # Submit job
+srun --pty bash                               # Interactive job
+scancel <job_id>                              # Cancel job
+scontrol show job <job_id>                    # Job details
+sacct -j <job_id>                             # Job history
+
+# Slurm Job Script Example
+#!/bin/bash
+#SBATCH --job-name=myjob
+#SBATCH --nodes=2
+#SBATCH --ntasks-per-node=4
+#SBATCH --gres=gpu:4
+#SBATCH --time=04:00:00
+#SBATCH --partition=gpu
+module load cuda/12.1 python/3.11
+srun python train.py
+
+# IPMI for Remote GPU Management (some BMCs)
+ipmitool sensor list | grep -i gpu            # GPU temp sensors
+ipmitool delloem powermonitor                 # Dell power monitoring
+```
+
+## Server BMC & iLO Management
+
+HP iLO, Dell iDRAC, Supermicro IPMI, Gigabyte BMC commands.
+
+```bash
+# HP iLO Commands
+hponcfg                                       # iLO CLI tool
+hponcfg -i                                    # Get iLO info
+hponcfg -a | grep -i network                  # Network settings
+hponcfg -r                                    # Reset iLO
+
+# HP iLO via REST API (curl)
+curl -k -u admin:password https://ilo-ip/redfish/v1/Systems/1
+curl -k -u admin:password https://ilo-ip/redfish/v1/Systems/1 | jq '.PowerState'
+curl -k -u admin:password -X POST -H 'Content-Type: application/json' \
+  -d '{"ResetType": "On"}' \
+  https://ilo-ip/redfish/v1/Systems/1/Actions/ComputerSystem.Reset
+
+# Dell iDRAC Commands (racadm)
+racadm getsysinfo                              # System info
+racadm getniccfg                              # Network settings
+racadm setniccfg -s 192.168.1.100 255.255.255.0 192.168.1.1
+racadm racreset                                # Reset iDRAC
+racadm serveraction powerup                    # Power on
+racadm serveraction powerdown                  # Power off
+racadm serveraction powerstatus                # Power status
+racadm set iDRAC.Users.2.Password ""           # Clear password
+
+# Dell iDRAC via IPMItool
+ipmitool -I lanplus -H idrac-ip -U admin -P password mc info
+ipmitool -I lanplus -H idrac-ip -U admin -P password power on
+ipmitool -I lanplus -H idrac-ip -U admin -P password power off
+ipmitool -I lanplus -H idrac-ip -U admin -P password power status
+
+# Generic IPMI Commands
+ipmitool mc info                               # BMC info
+ipmitool lan print                             # Network config
+ipmitool sensor list                           # All sensors
+ipmitool sel list                              # System event log
+ipmitool sel clear                             # Clear event log
+ipmitool fru list                              # FRU info
+
+# IPMI Power Control
+ipmitool power on                              # Power on
+ipmitool power off                             # Power off
+ipmitool power cycle                           # Power cycle
+ipmitool power status                          # Power status
+ipmitool chassis status                        # Chassis status
+
+# IPMI Serial Over LAN (SOL)
+ipmitool -I lanplus -H ipmi-ip -U admin -P password sol activate
+ipmitool -I lanplus -H ipmi-ip -U admin -P password sol deactivate
+
+# Supermicro IPMI
+ipmitool raw 0x30 0x45 0x01 0x01              # Full speed fans
+ipmitool raw 0x30 0x45 0x01 0x00              # Optimal fans
+
+# Redfish API (Universal)
+curl -k -u admin:password https://bmc-ip/redfish/v1/
+curl -k -u admin:password https://bmc-ip/redfish/v1/Systems/1
+curl -k -u admin:password -X POST -H 'Content-Type: application/json' \
+  -d '{"ResetType": "ForceRestart"}' \
+  https://bmc-ip/redfish/v1/Systems/1/Actions/ComputerSystem.Reset
+
+# BIOS Password Reset (Physical - varies by vendor)
+# HP: Switch SW1 position 6, or remove CMOS battery
+# Dell: PSWD jumper, or remove CMOS battery
+# Supermicro: JPB1 jumper, or SW1 button
+# Gigabyte: CLRTC jumper, or red CLR_CMOS button
+# Always consult service manual first!
+
+# Firewall for BMC/IPMI access
+firewall-cmd --add-port=623/udp --permanent    # IPMI
+firewall-cmd --add-port=443/tcp --permanent    # HTTPS
+firewall-cmd --add-port=5900/tcp --permanent    # VNC/Console
+firewall-cmd --reload
+```
+
+## Package Search & Downgrade
+
+Advanced package management for Debian/Ubuntu and RHEL/CentOS.
+
+```bash
+# Debian/Ubuntu Package Search
+apt search keyword                             # Basic search
+apt search --names-only keyword                # Name only search
+apt show package                               # Package details
+apt-cache madison package                      # All versions
+apt-cache policy package                       # Available versions
+apt-file update                                # Update file database
+apt-file search filename                       # Find package by file
+apt list --installed | grep keyword            # Search installed
+apt list --upgradable                          # Show upgradable
+
+# RHEL/CentOS/Fedora Package Search
+dnf search keyword                             # Basic search
+dnf search --name-only keyword                 # Name only
+dnf info package                               # Package details
+dnf --showduplicates list package              # All versions
+dnf provides /path/to/file                     # Find package by file
+dnf provides command                           # Find package for command
+dnf list installed | grep keyword              # Search installed
+dnf repoquery --installed "*python*"           # Query installed
+
+# Debian/Ubuntu Downgrade
+apt-cache policy package                       # Check versions
+apt install package=1.2.3-4ubuntu1             # Specific version
+apt install aptitude                           # Install better tool
+aptitude install package=version               # Downgrade with aptitude
+apt-mark hold package                          # Prevent upgrades
+apt-mark showhold                              # List held packages
+
+# RHEL/CentOS/Fedora Downgrade
+dnf --showduplicates list package              # Show versions
+dnf downgrade package                          # Downgrade
+dnf install package-1.2.3-4.el8                # Specific version
+yum history list                               # View history
+yum history undo <id>                          # Undo transaction
+sudo dnf versionlock add package               # Lock version
+sudo dnf versionlock list                      # List locked
+echo "exclude=package" >> /etc/dnf/dnf.conf    # Exclude from updates
+```
 ```
