@@ -112,6 +112,188 @@ chmod +x app.appimage
 appimaged                    # Daemon for AppImages
 ```
 
+## Package Search - Advanced
+
+### Debian/Ubuntu Package Search
+
+```bash
+# Basic search
+apt search keyword
+apt-cache search keyword
+
+# Search package names only
+apt search --names-only keyword
+
+# Search with detailed info
+apt show package
+apt-cache show package
+
+# Show all available versions
+apt-cache madison package
+apt-cache policy package
+
+# Search by installed packages
+apt list --installed | grep keyword
+apt list --installed | grep -i python
+
+# Search upgradable packages
+apt list --upgradable
+
+# Search for package that provides a file
+apt-file update  # Update database first
+apt-file search filename
+apt-file find /path/to/file
+
+# Search package contents
+apt-file list package
+
+# Search by maintainer
+apt-cache search "Maintainer:.*debian"
+
+# Search by section/category
+apt-cache search ~ndevelopment  # Development packages
+apt-cache search ~nweb          # Web packages
+apt-cache search ~pgame         # Games
+```
+
+### RHEL/CentOS/Fedora Package Search
+
+```bash
+# Basic search
+dnf search keyword
+yum search keyword
+
+# Search package names only
+dnf search --name-only keyword
+
+# Show package details
+dnf info package
+yum info package
+
+# List all versions
+dnf --showduplicates list package
+
+# Search installed packages
+dnf list installed | grep keyword
+dnf repoquery --installed --queryformat "%{NAME} - %{VERSION}" | grep keyword
+
+# Search available packages
+dnf list available
+dnf available
+
+# Search what provides a file/command
+dnf provides /path/to/file
+dnf provides command
+yum whatprovides "*bin/command"
+
+# Search by architecture
+dnf list available | grep ".x86_64"
+dnf list available | grep ".noarch"
+
+# Search by group
+dnf group list
+dnf group info "Development Tools"
+
+# Search repositories
+dnf repolist
+dnf repolist all
+
+# Search specific repo
+dnf --enablerepo=epel search keyword
+```
+
+## Package Downgrade
+
+### Debian/Ubuntu Downgrade Methods
+
+```bash
+# Method 1: Install specific version (most common)
+# First, check available versions
+apt-cache policy package
+apt-cache madison package
+
+# Downgrade to specific version
+sudo apt install package=1.2.3-4ubuntu1
+
+# If version not in current repo, check older releases
+# Edit /etc/apt/sources.list to add old release
+sudo apt-cache policy package  # Check available versions from all repos
+
+# Method 2: Using aptitude (better dependency resolution)
+sudo apt install aptitude
+sudo aptitude install package=version
+
+# Method 3: From snapshot repository
+# Add snapshot repo for Ubuntu
+echo "deb http://snapshot.debian.org/archive/ubuntu/20230101T000000Z/ $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/snapshot.list
+sudo apt update
+sudo apt install package=version
+
+# Method 4: Download and install specific .deb
+wget http://archive.ubuntu.com/ubuntu/pool/main/p/package/package_version.deb
+sudo dpkg -i package_version.deb
+
+# Method 5: Pin specific version to prevent upgrades
+cat << EOF | sudo tee /etc/apt/preferences.d/package-pin
+Package: package
+Pin: version 1.2.3-4ubuntu1
+Pin-Priority: 1001
+EOF
+
+# Hold package at current version
+sudo apt-mark hold package
+sudo apt-mark unhold package  # Unhold
+apt-mark showhold  # List held packages
+```
+
+### RHEL/CentOS/Fedora Downgrade Methods
+
+```bash
+# Method 1: Using dnf downgrade (RHEL 8+/Fedora)
+sudo dnf downgrade package
+
+# Method 2: Install specific version
+# List available versions
+dnf --showduplicates list package
+yum --showduplicate list package
+
+# Install specific version
+sudo dnf install package-1.2.3-4.el8
+sudo yum install package-1.2.3-4.el7
+
+# Method 3: Using yum history (RHEL 7/CentOS 7)
+# View history
+yum history list
+yum history info <transaction_id>
+
+# Undo specific transaction
+sudo yum history undo <transaction_id>
+
+# Method 4: From local RPM cache or repo
+# Install from DNF cache
+sudo dnf install /var/cache/dnf/*/packages/package-version.rpm
+
+# Download and install specific version
+sudo dnf download --resolve package-1.2.3
+sudo dnf install ./package-1.2.3.rpm
+
+# Method 5: Using yum versionlock (RHEL 7/CentOS 7)
+# Install plugin
+sudo yum install yum-plugin-versionlock
+
+# Lock package version
+sudo yum versionlock add package
+sudo yum versionlock delete package
+yum versionlock list
+
+# Method 6: Exclude from updates (RHEL 8+/Fedora)
+echo "exclude=package" | sudo tee -a /etc/dnf/dnf.conf
+
+# Or using DNF modules
+sudo dnf module reset package
+sudo dnf module enable package:stream
+```
+
 ## Common Scenarios
 
 ### Fix broken packages on Debian/Ubuntu
@@ -168,6 +350,80 @@ yum downgrade package
 
 # Or install specific version
 dnf install package-version
+```
+
+### Search package by keyword across all repos
+```bash
+# Debian/Ubuntu - detailed search
+apt-cache search "web server"
+apt-cache search "^python3-"  # Regex search
+apt-cache search ~npython ~sweb  # Python web packages
+
+# RHEL/CentOS - detailed search
+dnf search python development
+dnf repoquery --queryformat "%{NAME}" "*python*"
+dnf provides "*libssl*"
+
+# Search by description
+dnf search --all "web server"
+yum search all "database"
+```
+
+### Search for package that provides specific command
+```bash
+# Debian/Ubuntu
+apt-file update
+apt-file search curl
+apt-file find /usr/bin/git
+
+# What package owns installed file
+dpkg -S /usr/bin/python3
+
+# RHEL/CentOS
+dnf provides /usr/bin/git
+yum whatprovides "*curl"
+dnf provides "command(not found)"
+
+# Find what package provides shared library
+dnf provides libssl.so.1.1
+yum whatprovides libssl.so.10
+```
+
+### Downgrade to previous version
+```bash
+# Debian/Ubuntu - Easy downgrade
+sudo apt install package=1.0.0-1  # Specific version
+# Find version with: apt-cache policy package
+
+# RHEL/CentOS - Easy downgrade
+sudo dnf downgrade package
+sudo yum downgrade package
+
+# If downgrade fails due to dependencies
+# Debian/Ubuntu
+sudo aptitude install package=version  # Better handling
+
+# RHEL/CentOS - with dependencies
+sudo dnf downgrade --allowerasing package
+```
+
+### Prevent package from being upgraded
+```bash
+# Debian/Ubuntu
+sudo apt-mark hold package
+echo "package hold" | sudo dpkg --set-selections
+
+# Check held packages
+apt-mark showhold
+dpkg --get-selections | grep hold
+
+# RHEL/CentOS
+sudo dnf versionlock add package
+echo "exclude=package" | sudo tee -a /etc/dnf/dnf.conf
+
+# Check versionlock
+sudo dnf versionlock list
+sudo dnf versionlock delete package
 ```
 
 ### Add repository on Debian/Ubuntu
