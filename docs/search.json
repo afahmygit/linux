@@ -1,21 +1,23 @@
 ---
+layout: null
 ---
-{
+[
   {% for category in site.categories %}
   {
-    "title": "{{ category.title }}",
-    "url": "{{ category.url | absolute_url }}",
-    "category": "{{ category.title }}",
+    "title": {{ category.title | jsonify }},
+    "url": {{ category.url | absolute_url | jsonify }},
+    "category": {{ category.title | jsonify }},
     "content": {{ category.content | strip_html | strip_newlines | jsonify }},
     "excerpt": {{ category.excerpt | strip_html | strip_newlines | jsonify }},
     "tags": [
       {% if category.icon %}"{{ category.title | downcase }}"{% endif %}
-      {% if page.tags %}
+      {% if category.tags %}
         {% for tag in category.tags %}
-        ,"{{ tag }}"
+          {% unless forloop.first and category.icon %},{% endunless %}
+          {{ tag | jsonify }}{% unless forloop.last %},{% endunless %}
         {% endfor %}
       {% endif %}
     ]
   }{% unless forloop.last %},{% endunless %}
   {% endfor %}
-}
+]
